@@ -67,8 +67,12 @@ tap-grib --about --format=markdown
 ### Examples
 
 ```yaml
+config:
+  paths:
     # all values in a table
     - path: ./data/test.grib
+      # optional table name, defaults to file name
+      table_name: my_table
       # skip the listed columns
       ignore_fields:
         - ensemble
