@@ -25,9 +25,8 @@ def dummy_tap(sample_file: str) -> TapGrib:
         "paths": [
             {
                 "path": sample_file,
-                "skip_fields": [],
-                "primary_keys": ["latitude", "longitude", "ts"],
-                # group_by left unset → pivot all params
+                # demonstrate ignoring optional metadata fields
+                "ignore_fields": ["centre", "grid_type"],
             }
         ]
     }
@@ -35,14 +34,14 @@ def dummy_tap(sample_file: str) -> TapGrib:
 
 
 def test_schema_includes_core_columns(dummy_tap: TapGrib):
-    """Schema must contain latitude, longitude, ts at minimum."""
+    """Schema must contain datetime, lat, lon, name, value at minimum."""
     streams = dummy_tap.discover_streams()
     assert streams, "No streams discovered"
     stream = streams[0]
 
     schema = stream.schema
     cols = set(schema["properties"].keys())
-    assert {"latitude", "longitude", "ts"}.issubset(cols)
+    assert {"datetime", "lat", "lon", "name", "value"}.issubset(cols)
 
 
 def test_records_match_schema(dummy_tap: TapGrib, capsys: pytest.CaptureFixture):
@@ -62,11 +61,13 @@ def test_records_match_schema(dummy_tap: TapGrib, capsys: pytest.CaptureFixture)
             f"Row columns differ from schema.\n" f"Extra:   {row_keys - schema_columns}"
         )
         # Core column types
-        assert isinstance(row["latitude"], (float, int))
-        assert isinstance(row["longitude"], (float, int))
-        assert isinstance(row["ts"], (datetime, type(None)))
+        assert isinstance(row["lat"], (float, int))
+        assert isinstance(row["lon"], (float, int))
+        assert isinstance(row["datetime"], (datetime, type(None)))
+        assert isinstance(row["name"], str)
+        assert isinstance(row["value"], (float, int))
 
-    # Print first two rows
+    # Print first two rows for debug
     print("\n--- First two GRIB rows ------------------------------------------------")
     for i, r in enumerate(rows[:2], start=1):
         print(f"Row {i}:")
@@ -75,3 +76,17 @@ def test_records_match_schema(dummy_tap: TapGrib, capsys: pytest.CaptureFixture)
 
     captured = capsys.readouterr()
     assert "Row 1:" in captured.out
+
+
+def test_ignore_core_field_raises(sample_file: str):
+    """Config that ignores a core field must raise ValueError."""
+    config = {
+        "paths": [
+            {
+                "path": sample_file,
+                "ignore_fields": ["lat"],  # not allowed
+            }
+        ]
+    }
+    with pytest.raises(ValueError):
+        TapGrib(config=config, catalog={}, state={}).discover_streams()

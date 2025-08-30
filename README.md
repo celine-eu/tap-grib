@@ -34,10 +34,17 @@ uv tool install git+https://github.com/ORG_NAME/tap-grib.git@main
 
 ## Configuration
 
+**Note**: Use a tool like ECCODES to view the grib structure and associate proper configurations. E.g.
+
+```bash
+grib_ls ./data/test.grib  | less
+```
+
 ### Accepted Config Options
 
 
 ## Settings
+
 
 | Setting | Required | Default | Description |
 |:--------|:--------:|:-------:|:------------|
@@ -54,7 +61,7 @@ uv tool install git+https://github.com/ORG_NAME/tap-grib.git@main
 A full list of supported settings and capabilities for this tap is available by running:
 
 ```bash
-tap-grib --about
+tap-grib --about --format=markdown
 ```
 
 ### Examples
@@ -62,16 +69,13 @@ tap-grib --about
 ```yaml
     # all values in a table
     - path: ./data/test.grib
+      # skip the listed columns
+      ignore_fields:
+        - ensemble
+        - grid_type
+        - centre
+        - edition
 
-    - path: ./data/test_1.grib
-      # skip column fields
-      skip_fields: ["step"]
-      # select primary keys
-      primary_keys: ["latitude", "longitude", "ts"]
-
-    # creates a table per column
-    - path: ./data/reanalysis-era5-single-levels*
-      group_by: ["typeOfLevel", "level"]
 ```
 
 ### Configure using environment variables

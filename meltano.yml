@@ -8,8 +8,8 @@ environments:
   - name: test
 plugins:
   extractors:
-    - name: "tap-grib"
-      namespace: "tap_grib"
+    - name: tap-grib
+      namespace: tap_grib
       pip_url: -e .
       capabilities:
         - state
@@ -21,24 +21,15 @@ plugins:
         - name: paths
           kind: array
           description: >
-            List of GRIB file definitions. Each item is an object with:
-              - path: GRIB file path or glob pattern
-              - skip_fields: fields to exclude (optional)
-              - primary_keys: primary keys for records (optional) defaults to [latitude, longitude, ts]
-              - group_by: attributes to group messages into datasets (optional, example ["typeOfLevel"])
-              - datasets_name: custom dataset names for this file (optional)
-        - name: paths_file
-          kind: string
-          description: Path to a JSON file containing GRIB file definitions (same structure as
+            List of GRIB file paths or glob patterns.
       config:
         paths:
           - path: ./data/test.grib
-            # skip_fields: ["step", "valid_time"]
-            # primary_keys: ["latitude", "longitude", "ts"]
-            # group_by: ["typeOfLevel"]
-            # datasets_name:
-            #   - sealevels
-            #   - ground
+            ignore_fields:
+              - ensemble
+              - grid_type
+              - centre
+              - edition
 
   loaders:
     - name: target-jsonl

@@ -1,11 +1,9 @@
+import typing as t
 import numpy as np
 import pygrib
 from datetime import datetime, timezone
 from singer_sdk.streams import Stream
-
-import typing as t
-
-import numpy as np
+from singer_sdk import typing as th
 
 
 def _extract_grid(msg):
@@ -20,7 +18,11 @@ def _extract_grid(msg):
         val = getattr(msg, "value", None) or getattr(msg, "data", None)
         if lat is None or lon is None or val is None:
             return np.array([]), np.array([]), np.array([])
-        return np.array([float(lat)]), np.array([float(lon)]), np.array([float(val)])
+        return (
+            np.array([float(lat)]),
+            np.array([float(lon)]),
+            np.array([float(val)]),
+        )
 
     # Normalize scalars to arrays
     if np.isscalar(vals):
@@ -33,57 +35,74 @@ def _extract_grid(msg):
 
 
 class GribStream(Stream):
+    """Stream that reads records from a GRIB file in normalized (long) format."""
+
+    CORE_FIELDS = {"datetime", "lat", "lon", "name", "value"}
+
     def __init__(
         self,
-        *args,
+        tap,
+        name: str,
+        *,
         file_path: str,
-        filter_group: dict[str, t.Any],
-        skip_fields: set[str] | None = None,
         primary_keys: list[str] | None = None,
-        cached_schema: dict | None = None,
+        ignore_fields: set[str] | None = None,
         **kwargs,
     ):
+        # consume custom args
         self.file_path = file_path
-        self.filter_group = filter_group
-        self.skip_fields = skip_fields or set()
-        self.primary_keys = primary_keys or ["latitude", "longitude", "ts"]
-        self.schema = cached_schema
-        super().__init__(*args, **kwargs)
+        self.primary_keys = primary_keys or ["datetime", "lat", "lon", "name"]
 
+        ignore_fields = ignore_fields or set()
+        invalid = ignore_fields & self.CORE_FIELDS
+        if invalid:
+            raise ValueError(f"Cannot ignore core fields: {', '.join(sorted(invalid))}")
+        self.ignore_fields = ignore_fields
+
+        # now call parent init with only tap/name/kwargs
+        super().__init__(tap=tap, name=name, **kwargs)
+
+    # --------------------------
+    # Schema
+    # --------------------------
+    @property
     def schema(self) -> dict:
-        if self._schema is None:
-            raise RuntimeError(
-                f"Schema not passed from Tap for stream {self.name}. "
-                "Tap must build schema during discovery."
-            )
-        return self._schema
+        props = [
+            th.Property("datetime", th.DateTimeType()),
+            th.Property("lat", th.NumberType()),
+            th.Property("lon", th.NumberType()),
+            th.Property("level_type", th.StringType(nullable=True)),
+            th.Property("level", th.IntegerType(nullable=True)),
+            th.Property("name", th.StringType()),
+            th.Property("value", th.NumberType()),
+            th.Property("ensemble", th.IntegerType(nullable=True)),
+            th.Property("forecast_step", th.IntegerType(nullable=True)),
+            th.Property("edition", th.IntegerType(nullable=True)),
+            th.Property("centre", th.StringType(nullable=True)),
+            th.Property("data_type", th.StringType(nullable=True)),
+            th.Property("grid_type", th.StringType(nullable=True)),
+        ]
+        # filter out ignored fields
+        props = [p for p in props if p.name not in self.ignore_fields]
+        return th.PropertiesList(*props).to_dict()
 
-    def get_records(self, context=None):
+    # --------------------------
+    # Record extraction
+    # --------------------------
+    def get_records(self, context: dict | None = None) -> t.Iterable[dict]:
         self.logger.info(f"[{self.name}] Streaming records from {self.file_path}")
-        pivot: dict[tuple[float, float, datetime], dict[str, t.Any]] = {}
-        batch_size = 5000
 
         with pygrib.open(self.file_path) as grbs:
             for msg in grbs:
-                if not all(
-                    getattr(msg, k, None) == v for k, v in self.filter_group.items()
-                ):
+                try:
+                    lats, lons, vals = _extract_grid(msg)
+                except Exception as e:
+                    self.logger.warning(f"Skipping message: {e}")
                     continue
-
-                shortName = msg.shortName
-                typeOfLevel = msg.typeOfLevel if hasattr(msg, "typeOfLevel") else None
-                level = msg.level if hasattr(msg, "level") else None
-                var_name = f"{typeOfLevel}_" if typeOfLevel else ""
-                var_name += f"{level}_" if level else ""
-                var_name += shortName
-
-                if var_name in self.skip_fields:
-                    continue
-
-                lats, lons, vals = _extract_grid(msg)
                 if lats.size == 0:
                     continue
 
+                # safe datetime extraction
                 valid_dt = getattr(msg, "validDate", None)
                 if valid_dt is None:
                     date = getattr(msg, "dataDate", None)
@@ -98,22 +117,29 @@ class GribStream(Stream):
                             year, month, day, hour, minute, tzinfo=timezone.utc
                         )
 
+                base_record = {
+                    "datetime": valid_dt,
+                    "level_type": getattr(msg, "typeOfLevel", None),
+                    "level": getattr(msg, "level", None),
+                    "name": getattr(msg, "shortName", None),
+                    "ensemble": getattr(msg, "perturbationNumber", None),
+                    "forecast_step": getattr(msg, "step", None),
+                    "edition": getattr(msg, "edition", None),
+                    "centre": getattr(msg, "centre", None),
+                    "data_type": getattr(msg, "dataType", None),
+                    "grid_type": getattr(msg, "gridType", None),
+                }
+
                 for lat, lon, val in zip(lats, lons, vals):
                     if val is None or (hasattr(val, "mask") and val.mask):
                         continue
-                    rec_key = (float(lat), float(lon), valid_dt)
-                    if rec_key not in pivot:
-                        pivot[rec_key] = {
-                            "latitude": float(lat),
-                            "longitude": float(lon),
-                            "ts": valid_dt,
-                        }
+                    rec = dict(base_record)
+                    rec["lat"] = float(lat)
+                    rec["lon"] = float(lon)
+                    rec["value"] = float(val)
 
-                    pivot[rec_key][var_name] = float(val)
+                    # drop ignored fields
+                    for f in self.ignore_fields:
+                        rec.pop(f, None)
 
-                if len(pivot) >= batch_size:
-                    yield from pivot.values()
-                    pivot.clear()
-
-        if pivot:
-            yield from pivot.values()
+                    yield rec
