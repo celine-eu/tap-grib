@@ -24,7 +24,7 @@ plugins:
             List of GRIB file paths or glob patterns.
       config:
         paths:
-          - path: ./data/reanalysis-era5-single-levels.grib
+          - path: ./data/test.grib
             ignore_fields:
               - ensemble
               - grid_type
