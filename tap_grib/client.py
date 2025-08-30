@@ -4,9 +4,6 @@ import pygrib
 from datetime import datetime, timezone
 from singer_sdk.streams import Stream
 from singer_sdk import typing as th
-import singer_sdk.singerlib as singer
-from typing import Generator
-from singer_sdk.helpers._util import utc_now
 
 
 def safe_get(msg, key, default=None):
@@ -95,21 +92,6 @@ class GribStream(Stream):
         # filter out ignored fields
         props = [p for p in props if p.name not in self.ignore_fields]
         return th.PropertiesList(*props).to_dict()
-
-    def _generate_record_messages(
-        self,
-        record: dict,
-    ) -> Generator[singer.RecordMessage, None, None]:
-        for stream_map in self.stream_maps:
-            mapped_record = stream_map.transform(record)
-            if mapped_record is not None:
-                record_message = singer.RecordMessage(
-                    stream=stream_map.stream_alias,
-                    record=mapped_record,
-                    version=None,
-                    time_extracted=utc_now(),
-                )
-                yield record_message
 
     # --------------------------
     # Record extraction
