@@ -38,6 +38,7 @@ tap-grib = 'tap_grib.tap:TapGrib.cli'
 [dependency-groups]
 dev = [
     { include-group = "test" },
+    "meltano>=3.9.1",
     "pytest>=8.4.1",
 ]
 test = [
