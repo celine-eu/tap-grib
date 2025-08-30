@@ -7,7 +7,7 @@ from singer_sdk import Tap, Stream
 from singer_sdk import typing as th
 from singer_sdk.helpers._classproperty import classproperty
 from singer_sdk.helpers.capabilities import TapCapabilities
-
+import re
 from tap_grib.client import GribStream
 
 
@@ -22,6 +22,12 @@ class TapGrib(Tap):
             th.ArrayType(
                 th.ObjectType(
                     th.Property("path", th.StringType, required=True),
+                    th.Property(
+                        "table_name",
+                        th.StringType,
+                        required=False,
+                        description="Custom table name for the stream (default = file basename).",
+                    ),
                     th.Property(
                         "ignore_fields",
                         th.ArrayType(th.StringType),
@@ -39,19 +45,28 @@ class TapGrib(Tap):
     def capabilities(cls) -> list[TapCapabilities]:
         return [TapCapabilities.CATALOG, TapCapabilities.DISCOVER]
 
+    def default_stream_name(self, file_path: str) -> str:
+        base = os.path.splitext(os.path.basename(file_path))[0]
+        # replace all non-alphanumeric characters with underscore
+        safe = re.sub(r"[^0-9a-zA-Z]+", "_", base)
+        return safe.strip("_").lower()
+
     def discover_streams(self) -> list[Stream]:
         streams: list[Stream] = []
         for entry in self.config.get("paths", []):
             path = entry["path"]
             ignore_fields = set(entry.get("ignore_fields", []))
+            table_name = entry.get("table_name")
+
             for file_path in glob.glob(path):
-                name = os.path.splitext(os.path.basename(file_path))[0]
+                stream_name = table_name or self.default_stream_name(file_path)
+
                 streams.append(
                     GribStream(
                         tap=self,
-                        name=name,
+                        name=stream_name,
                         file_path=file_path,
-                        primary_keys=["datetime", "lat", "lon", "name"],
+                        primary_keys=["datetime", "lat", "lon", "variable"],
                         ignore_fields=ignore_fields,
                     )
                 )

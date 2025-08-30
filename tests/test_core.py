@@ -90,3 +90,17 @@ def test_ignore_core_field_raises(sample_file: str):
     }
     with pytest.raises(ValueError):
         TapGrib(config=config, catalog={}, state={}).discover_streams()
+
+
+def test_table_name_override(sample_file: str):
+    config = {
+        "paths": [
+            {
+                "path": sample_file,
+                "table_name": "custom_table",
+            }
+        ]
+    }
+    tap = TapGrib(config=config, catalog={}, state={})
+    streams = tap.discover_streams()
+    assert streams[0].name == "custom_table"

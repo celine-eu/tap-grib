@@ -6,6 +6,13 @@ from singer_sdk.streams import Stream
 from singer_sdk import typing as th
 
 
+def safe_get(msg, key, default=None):
+    try:
+        return getattr(msg, key)
+    except (AttributeError, RuntimeError):
+        return default
+
+
 def _extract_grid(msg):
     """Return (lats, lons, vals) as 1-D numpy arrays for any GRIB message."""
     try:
@@ -119,15 +126,15 @@ class GribStream(Stream):
 
                 base_record = {
                     "datetime": valid_dt,
-                    "level_type": getattr(msg, "typeOfLevel", None),
-                    "level": getattr(msg, "level", None),
-                    "name": getattr(msg, "shortName", None),
-                    "ensemble": getattr(msg, "perturbationNumber", None),
-                    "forecast_step": getattr(msg, "step", None),
-                    "edition": getattr(msg, "edition", None),
-                    "centre": getattr(msg, "centre", None),
-                    "data_type": getattr(msg, "dataType", None),
-                    "grid_type": getattr(msg, "gridType", None),
+                    "level_type": safe_get(msg, "typeOfLevel", None),
+                    "level": safe_get(msg, "level", None),
+                    "name": safe_get(msg, "shortName", None),
+                    "ensemble": safe_get(msg, "perturbationNumber", None),
+                    "forecast_step": safe_get(msg, "step", None),
+                    "edition": safe_get(msg, "edition", None),
+                    "centre": safe_get(msg, "centre", None),
+                    "data_type": safe_get(msg, "dataType", None),
+                    "grid_type": safe_get(msg, "gridType", None),
                 }
 
                 for lat, lon, val in zip(lats, lons, vals):
