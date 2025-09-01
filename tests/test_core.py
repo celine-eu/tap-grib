@@ -1,11 +1,10 @@
 from __future__ import annotations
-
 import os
 import json
 from datetime import datetime
 import pytest
-
 from tap_grib.tap import TapGrib
+import typing as t
 
 
 @pytest.fixture
@@ -50,12 +49,21 @@ def test_records_match_schema(dummy_tap: TapGrib, capsys: pytest.CaptureFixture)
     assert streams, "No streams discovered"
     stream = streams[0]
 
-    rows = list(stream.get_records())
+    rows = list(stream.get_records(None))
     assert rows, "No rows were emitted – check test.grib contains data"
 
     schema_columns = set(stream.schema["properties"].keys())
 
-    for row in rows:
+    for raw_row in rows:
+        row: dict[str, t.Any] | None = None
+        if isinstance(raw_row, dict):
+            row = dict(raw_row)  # already dict
+        else:
+            data, _ = raw_row  # unpack tuple
+            row = dict(data)  # only dict(data) here
+
+        assert row is not None
+
         row_keys = set(row.keys())
         assert row_keys <= schema_columns, (
             f"Row columns differ from schema.\n" f"Extra:   {row_keys - schema_columns}"

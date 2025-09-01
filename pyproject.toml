@@ -10,7 +10,6 @@ keywords = [
 ]
 classifiers = [
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -19,7 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 license = "Apache-2.0"
-license-files = [ "LICENSE" ]
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = [
     "pygrib>=2.1.6",
@@ -58,6 +57,7 @@ addopts = [
 
 [tool.mypy]
 warn_unused_configs = true
+disable_error_code = ["import-untyped"]
 
 [tool.ruff.lint]
 ignore = [
@@ -99,9 +99,10 @@ pass_env = [
     "GITHUB_*",
     "TAP_GRIB_*",
 ]
-dependency_groups = [ "test" ]
+dependency_groups = [ "test", "typing" ]
 commands = [ [ "pytest", { replace = "posargs", default = [ "tests" ], extend = true } ] ]
 
 [tool.tox.env.typing]
 dependency_groups = [ "test", "typing" ]
 commands = [ [ "mypy", { replace = "posargs", default = [ "tap_grib", "tests" ], extend = true } ] ]
+

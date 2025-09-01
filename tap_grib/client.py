@@ -1,9 +1,9 @@
-import typing as t
 import numpy as np
 import pygrib
 from datetime import datetime, timezone
 from singer_sdk.streams import Stream
 from singer_sdk import typing as th
+import typing as t
 
 
 def safe_get(msg, key, default=None):
@@ -74,7 +74,7 @@ class GribStream(Stream):
     # --------------------------
     @property
     def schema(self) -> dict:
-        props = [
+        props: t.List[th.Property] = [
             th.Property("datetime", th.DateTimeType()),
             th.Property("lat", th.NumberType()),
             th.Property("lon", th.NumberType()),
@@ -96,7 +96,11 @@ class GribStream(Stream):
     # --------------------------
     # Record extraction
     # --------------------------
-    def get_records(self, context: dict | None = None) -> t.Iterable[dict]:
+    def get_records(
+        self, context: t.Mapping[str, t.Any] | None
+    ) -> t.Iterable[
+        dict[str, t.Any] | tuple[dict[t.Any, t.Any], dict[t.Any, t.Any] | None]
+    ]:
         self.logger.info(f"[{self.name}] Streaming records from {self.file_path}")
 
         with pygrib.open(self.file_path) as grbs:

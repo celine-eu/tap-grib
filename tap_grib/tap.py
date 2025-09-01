@@ -5,16 +5,21 @@ import os
 import glob
 from singer_sdk import Tap, Stream
 from singer_sdk import typing as th
-from singer_sdk.helpers._classproperty import classproperty
-from singer_sdk.helpers.capabilities import TapCapabilities
+from singer_sdk.helpers.capabilities import TapCapabilities, CapabilitiesEnum
 import re
 from tap_grib.client import GribStream
+import typing as t
 
 
 class TapGrib(Tap):
     """Singer tap that extracts data from GRIB files."""
 
     name = "tap-grib"
+
+    capabilities: t.ClassVar[list[CapabilitiesEnum]] = [
+        TapCapabilities.CATALOG,
+        TapCapabilities.DISCOVER,
+    ]
 
     config_jsonschema = th.PropertiesList(
         th.Property(
@@ -40,10 +45,6 @@ class TapGrib(Tap):
             description="List of GRIB file path definitions.",
         ),
     ).to_dict()
-
-    @classproperty
-    def capabilities(cls) -> list[TapCapabilities]:
-        return [TapCapabilities.CATALOG, TapCapabilities.DISCOVER]
 
     def default_stream_name(self, file_path: str) -> str:
         base = os.path.splitext(os.path.basename(file_path))[0]
