@@ -4,6 +4,10 @@ from datetime import datetime, timezone
 from singer_sdk.streams import Stream
 from singer_sdk import typing as th
 import typing as t
+import os
+
+SDC_INCREMENTAL_KEY = "_sdc_last_modified"
+SDC_FILENAME = "_sdc_filename"
 
 
 def safe_get(msg, key, default=None):
@@ -13,7 +17,7 @@ def safe_get(msg, key, default=None):
         return default
 
 
-def _extract_grid(msg):
+def _extract_grid(msg: t.Any):
     """Return (lats, lons, vals) as 1-D numpy arrays for any GRIB message."""
     try:
         lats, lons = msg.latlons()
@@ -33,7 +37,7 @@ def _extract_grid(msg):
 
     # Normalize scalars to arrays
     if np.isscalar(vals):
-        vals = np.array([float(vals)])
+        vals = np.array([float(t.cast(float, vals))])
         lat0 = float(lats.flat[0]) if hasattr(lats, "flat") else float(lats)
         lon0 = float(lons.flat[0]) if hasattr(lons, "flat") else float(lons)
         return np.array([lat0]), np.array([lon0]), vals
@@ -69,6 +73,10 @@ class GribStream(Stream):
         # now call parent init with only tap/name/kwargs
         super().__init__(tap=tap, name=name, **kwargs)
 
+        self.state_partitioning_keys = [SDC_FILENAME]
+        self.replication_key = SDC_INCREMENTAL_KEY
+        self.forced_replication_method = "INCREMENTAL"
+
     # --------------------------
     # Schema
     # --------------------------
@@ -88,6 +96,16 @@ class GribStream(Stream):
             th.Property("centre", th.StringType(nullable=True)),
             th.Property("data_type", th.StringType(nullable=True)),
             th.Property("grid_type", th.StringType(nullable=True)),
+            th.Property(
+                SDC_INCREMENTAL_KEY,
+                th.DateTimeType(nullable=True),
+                description="Replication checkpoint (file mtime or row date)",
+            ),
+            th.Property(
+                SDC_FILENAME,
+                th.StringType(nullable=True),
+                description="Filename reference",
+            ),
         ]
         # filter out ignored fields
         props = [p for p in props if p.name not in self.ignore_fields]
@@ -102,6 +120,32 @@ class GribStream(Stream):
         dict[str, t.Any] | tuple[dict[t.Any, t.Any], dict[t.Any, t.Any] | None]
     ]:
         self.logger.info(f"[{self.name}] Streaming records from {self.file_path}")
+
+        filename = os.path.basename(self.file_path)
+        partition_context = {"filename": filename}
+        last_bookmark = self.get_starting_replication_key_value(partition_context)
+
+        bookmark_dt: datetime | None = None
+        if last_bookmark:
+            bookmark_dt = datetime.fromisoformat(last_bookmark)
+            if bookmark_dt.tzinfo is None:
+                bookmark_dt = bookmark_dt.replace(tzinfo=timezone.utc)
+            else:
+                bookmark_dt = bookmark_dt.astimezone(timezone.utc)
+
+        mtime = datetime.fromtimestamp(
+            os.path.getmtime(self.file_path), tz=timezone.utc
+        )
+
+        # skip file entirely if mtime <= bookmark
+        if bookmark_dt and mtime <= bookmark_dt:
+            self.logger.info(
+                "Skipping %s (mtime=%s <= bookmark=%s)",
+                self.file_path,
+                mtime,
+                bookmark_dt,
+            )
+            return []
 
         with pygrib.open(self.file_path) as grbs:
             for msg in grbs:
@@ -139,6 +183,8 @@ class GribStream(Stream):
                     "centre": safe_get(msg, "centre", None),
                     "data_type": safe_get(msg, "dataType", None),
                     "grid_type": safe_get(msg, "gridType", None),
+                    SDC_INCREMENTAL_KEY: mtime,
+                    SDC_FILENAME: filename,
                 }
 
                 for lat, lon, val in zip(lats, lons, vals):
@@ -154,3 +200,9 @@ class GribStream(Stream):
                         rec.pop(f, None)
 
                     yield rec
+
+            # advance bookmark with the latest seen mtime
+            self._increment_stream_state(
+                {SDC_INCREMENTAL_KEY: mtime.isoformat()},
+                context=partition_context,
+            )
