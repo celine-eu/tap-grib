@@ -1351,7 +1351,7 @@ wheels = [
 
 [[package]]
 name = "pygrib"
-version = "2.1.6"
+version = "2.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1360,20 +1360,28 @@ dependencies = [
     { name = "pyproj", version = "3.7.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "pyproj", version = "3.7.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/27/60/bac29fc06197f85efccb346879da3ae9ee125525d43e28b0a1b768831a74/pygrib-2.1.6.tar.gz", hash = "sha256:047980aeb010ef457999950bcc8e46556910316cb77fe78c0bd1b3520aa920f0", size = 21808824, upload-time = "2024-07-05T01:11:33.405Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/dc/e9/29ebe5a47274afcfb37b17be9097b24cf2ff5640672cb06db12ff9a46346/pygrib-2.1.8.tar.gz", hash = "sha256:7ad941571c02b9afa685cb92fb85fb5ed2cd0e36c4ec40cb74d7782dc7975400", size = 21864193, upload-time = "2025-10-26T18:06:02.849Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fe/11/55388ae3f0abce352942409ee687d74348fd86f54b60a9517f2311194fc3/pygrib-2.1.6-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:354028fcfc5f29dbebe16da2df3c8cf41383818cf27a43adfa6cc1a4e43c249b", size = 18472537, upload-time = "2024-07-05T01:09:19.946Z" },
-    { url = "https://files.pythonhosted.org/packages/ec/33/9395540f48099d6b04e9f583cc5428ebcb56d54beffbed9207d671d14826/pygrib-2.1.6-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:06b3fb25889225a599a908fdb8d4590ab30a2738048d877725f90b6a2a777983", size = 18358507, upload-time = "2024-07-05T01:09:31.075Z" },
-    { url = "https://files.pythonhosted.org/packages/70/4e/741e1f5fa63a08a98de12bf00f274249cd5c3f9296af11f11c16e4375d06/pygrib-2.1.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:37ce2c761489b68f2642c739a488470b58aacf13c96bdae671dd35730960e94e", size = 18638885, upload-time = "2024-07-05T01:09:42.962Z" },
-    { url = "https://files.pythonhosted.org/packages/50/5d/12ae450349ce3d51844e775dff0ee1b04a9aee963d6ed6102ced290805b4/pygrib-2.1.6-cp311-cp311-macosx_11_0_x86_64.whl", hash = "sha256:d6b912cc528c3a87e4f9f990d5c1e57a54f61835dad5b8daac6adb048faf5c5a", size = 18473599, upload-time = "2024-07-05T01:09:53.485Z" },
-    { url = "https://files.pythonhosted.org/packages/53/9a/a1742fa64b2702d7723c2595bf1b36b1c56fd1915f6e3f185f057a79fbc3/pygrib-2.1.6-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:dc7fcb20bd5e2a94e1b7501bed45d418eadc6e325bed5f4de37a254409b5a5fe", size = 18358366, upload-time = "2024-07-05T01:10:04.64Z" },
-    { url = "https://files.pythonhosted.org/packages/c8/f0/9490a3bf86feef1be2678a6ce15131d44f6f06c863c2462f7f4a52c35c0a/pygrib-2.1.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:69a42b44ae395280b08f62e598b696444446759ae4954db42ad2d01ee2c94d8b", size = 18633622, upload-time = "2024-07-05T01:10:15.056Z" },
-    { url = "https://files.pythonhosted.org/packages/71/99/436f5af4e9093277b13153c6ce51336df886e7493076c3d756c44c988d47/pygrib-2.1.6-cp312-cp312-macosx_11_0_x86_64.whl", hash = "sha256:fa4613eef98b26bf9a8719869f656aa15362f700311aec777b2190deb1060a1d", size = 18467761, upload-time = "2024-07-05T01:10:25.844Z" },
-    { url = "https://files.pythonhosted.org/packages/b0/4d/e2d3150961801d46af88c4cf113c00ff0825206ac6d726cec11f667c9f8e/pygrib-2.1.6-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:332d29bbc16749375b24c8d9bd01180c0a9eda471df86b2073432fba3339d658", size = 18356620, upload-time = "2024-07-05T01:10:36.472Z" },
-    { url = "https://files.pythonhosted.org/packages/ab/cc/4b2b85241086a3c42fcf4e9e225a1b2f5bfcb299a4c9c8e46f56c6a2d7c3/pygrib-2.1.6-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d368c359acacae4061ebcdfe635fb826f21fbc1f6c2227a269c870d9e8b49e70", size = 18617948, upload-time = "2024-07-05T01:10:46.979Z" },
-    { url = "https://files.pythonhosted.org/packages/ac/bb/a35a9b012c234416100abe53661cb7002e8fd6f3120f4f85475604cf9d00/pygrib-2.1.6-cp313-cp313-macosx_11_0_x86_64.whl", hash = "sha256:3cf2d87ad30449726d9279ca8cfa4afbdc83670750a4dfb5d965e3fc55d3aa8d", size = 18466301, upload-time = "2024-10-24T17:43:11.002Z" },
-    { url = "https://files.pythonhosted.org/packages/fd/15/bb162b016378993b5a779d83ec499dfd82d8df7776885fb826b69d2b7b98/pygrib-2.1.6-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:00f84e99372c6cf51f6a67e26c394dc3371ec356906e5aa9177f12372d92b228", size = 18356130, upload-time = "2024-10-24T17:42:56.124Z" },
-    { url = "https://files.pythonhosted.org/packages/ea/42/112c2f6836e730343fe21ad85e916c1b742d1f951738a3e9b3f6fab65128/pygrib-2.1.6-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:56d70f492e1a298429a94662c5003c6959d8cc1b078173312fa9cf3bf36a14b8", size = 18613954, upload-time = "2024-10-24T17:43:34.552Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/63/46ae27b2e643ed6558b942df5593a768a7c272d81940944079b8ae82abbb/pygrib-2.1.8-cp310-cp310-macosx_15_0_arm64.whl", hash = "sha256:316bc25a659f7b246309c3956c8b0869e6b45ce9dee9e460c6c9cb3eb7e0c4be", size = 20171417, upload-time = "2025-10-26T18:03:55.453Z" },
+    { url = "https://files.pythonhosted.org/packages/d5/5f/0f301173f63e54a9ac7d1fc3ad69588a72c2af8f0aaf6a441ed202160345/pygrib-2.1.8-cp310-cp310-macosx_15_0_x86_64.whl", hash = "sha256:f52a006cd65fa10503b1948ade807c505732699f8f26537d29003db6b5ca5af7", size = 20290609, upload-time = "2025-10-26T18:04:02.198Z" },
+    { url = "https://files.pythonhosted.org/packages/90/df/c283d149ce0c3e5c289caabc5293ae46ec81ac01abef1b0dfec68ddf26da/pygrib-2.1.8-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:c069b8a17b3cbc6f95fcd436e8540c09e5402984d2333268153320c6bfabe04b", size = 17731694, upload-time = "2025-10-26T18:04:09.167Z" },
+    { url = "https://files.pythonhosted.org/packages/c8/2c/6e13bff42e80bc66a4e49a494e433459b0216445bf1c9088e8613bb592dc/pygrib-2.1.8-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:5c6d032dba0a745960f96adc15590fcf2ffb73f4f7d0ad6f28cfa254f88defee", size = 17802891, upload-time = "2025-10-26T18:04:16.949Z" },
+    { url = "https://files.pythonhosted.org/packages/36/59/1b0d11c95b21df7092844cab2a7d799090d7e3853d100dce1c2dbd289b08/pygrib-2.1.8-cp311-cp311-macosx_15_0_arm64.whl", hash = "sha256:916906610809bfd58b066dd42f4585125ae393f1b95794ac0d84bd4b4d953f7a", size = 20163338, upload-time = "2025-10-26T18:04:25.606Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/e8/1a7431df26112dad8e2989342effb16ea24469734307504b885e35726a36/pygrib-2.1.8-cp311-cp311-macosx_15_0_x86_64.whl", hash = "sha256:64741d7fca01af894929428d01d7e85ef2e95c4a6b4163862c6fe83489763ad5", size = 20277734, upload-time = "2025-10-26T18:04:33.499Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/1f/ec6b8f44a13034d82b0998ffd9c6b4b06515e29fbb046ea6f3da30237bc5/pygrib-2.1.8-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:baf604dc82a6413f03c88e5c1a2722c3d3bccb0e74a9ba36592ebabac9ee785d", size = 17726322, upload-time = "2025-10-26T18:04:40.248Z" },
+    { url = "https://files.pythonhosted.org/packages/cf/06/7a420b8e5f7b8d3385e11d4f4d0d01827f01578ec49733c785826f94dd25/pygrib-2.1.8-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:93ebc99c4b998fd463c6ee75fb64d69f366768cf757b0db27552c740696df0b4", size = 17794642, upload-time = "2025-10-26T18:04:47.798Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/15/25e2a0399065c0c637001d5c4ef8b885ca2bd402a4d961c49c28de85b4a1/pygrib-2.1.8-cp312-cp312-macosx_15_0_arm64.whl", hash = "sha256:7dc0c267609395e9a5135f6617c8e689c10055303d4f745d9b591b6180377f8a", size = 20200529, upload-time = "2025-10-26T18:04:54.287Z" },
+    { url = "https://files.pythonhosted.org/packages/96/44/c95bed59300722a4d135d5692a382f3347bc1db0cbd6945436975ed64487/pygrib-2.1.8-cp312-cp312-macosx_15_0_x86_64.whl", hash = "sha256:18abee3b3708346c2ef4f77db23edeb6142fb35b0b596815d7614550388aca76", size = 20310657, upload-time = "2025-10-26T18:05:00.461Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/eb/ca92e6960f513e9ecaba17ba28ea15767a88e133fe0f4fd1ff083d185700/pygrib-2.1.8-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:d3ab748efdc97eb2a4b0ab752e2ee4c1d4bc2b24b82eb02640917b7f7a188d5a", size = 17776009, upload-time = "2025-10-26T18:05:05.498Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/fd/ce5f152d3a5ac223b5cfb59df79907193d8333ec97b9eb00d4fff5303e2d/pygrib-2.1.8-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:12bb2dade46f8cc755e67216e867f8959ac0170afef2f78913930f68c5a97e82", size = 17843263, upload-time = "2025-10-26T18:05:10.796Z" },
+    { url = "https://files.pythonhosted.org/packages/db/29/9bf1e08c3bea6321969b6ca5feacbddd052e519044c167b34417f4c7d2fa/pygrib-2.1.8-cp313-cp313-macosx_15_0_arm64.whl", hash = "sha256:3693da30a0b1e997c8bda7a7a4a2dfc3c5adadb5ecb54b4c10c95caa4aeb443c", size = 20200423, upload-time = "2025-10-26T18:05:15.988Z" },
+    { url = "https://files.pythonhosted.org/packages/02/3d/59b5340cca7bf4074da4e9b2954572a626c5a3eb8bde0414190b10a6a55a/pygrib-2.1.8-cp313-cp313-macosx_15_0_x86_64.whl", hash = "sha256:35e93d3a5df20ba13b59cc1631e395ec37f15a66b6aafd7edd95cfc163e234d4", size = 20310527, upload-time = "2025-10-26T18:05:21.451Z" },
+    { url = "https://files.pythonhosted.org/packages/45/f4/67095c134991d44a5361e6f07e38f162839715e7940b0a399b7e7b860e00/pygrib-2.1.8-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:f16d805abe78b3fd1de29a2f1d26849df85c24b095975af7fb5685f330594b7f", size = 17775832, upload-time = "2025-10-26T18:05:27.201Z" },
+    { url = "https://files.pythonhosted.org/packages/de/e5/e20c1cb440d80716dd12522bcd617e2b60d160465b6da15ed3c827478d7f/pygrib-2.1.8-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:2509ecb335bd49f584d5671f4b6fb6c7e42bd8e5db3c260c4af10a97d7b6a0c8", size = 17843058, upload-time = "2025-10-26T18:05:33.418Z" },
+    { url = "https://files.pythonhosted.org/packages/12/1a/4d627568d5810f6b3d4cec26a6665885cb63b5266fbf617ac36afe259f8c/pygrib-2.1.8-cp314-cp314-macosx_15_0_arm64.whl", hash = "sha256:757bf417d05de9de71087791fcc211c6d32544c181aa2285310654c1008869c4", size = 20197096, upload-time = "2025-10-26T18:05:39.022Z" },
+    { url = "https://files.pythonhosted.org/packages/23/5f/0fe6a24a63daea60050dad564f4acf69d6229d00a5ce4426c15ddc023f5e/pygrib-2.1.8-cp314-cp314-macosx_15_0_x86_64.whl", hash = "sha256:c3ec1d736c1976cbe77c774d80f5dca508a0c24f2c2eaea01b0d5d507778b84b", size = 20307509, upload-time = "2025-10-26T18:05:44.998Z" },
+    { url = "https://files.pythonhosted.org/packages/14/1f/0bd7b9ad85f931a74e0683defa113715aea0dcdf959b776c582b257a0ddf/pygrib-2.1.8-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:c97ee052d3048c80805e2103c74d0ac53c249a04eecc276341b32539c9e6c166", size = 17772314, upload-time = "2025-10-26T18:05:50.865Z" },
+    { url = "https://files.pythonhosted.org/packages/49/e7/29ead1dce94bb3571ad2b57414054cdc8c0c22f4401ddb8ec5e6cd66015c/pygrib-2.1.8-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:557aefaa3a7a3fac91ddc5372e55b33d59ebf6f6c0cbb23c1e3623aa4c2dc8ae", size = 17839355, upload-time = "2025-10-26T18:05:56.502Z" },
 ]
 
 [[package]]
@@ -1493,7 +1501,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "8.4.1"
+version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -1504,9 +1512,9 @@ dependencies = [
     { name = "pygments" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/08/ba/45911d754e8eba3d5a841a5ce61a65a685ff1798421ac054f85aa8747dfb/pytest-8.4.1.tar.gz", hash = "sha256:7c67fd69174877359ed9371ec3af8a3d2b04741818c51e5e99cc1742251fa93c", size = 1517714, upload-time = "2025-06-18T05:48:06.109Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/5c/00a0e072241553e1a7496d638deababa67c5058571567b92a7eaa258397c/pytest-8.4.2.tar.gz", hash = "sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01", size = 1519618, upload-time = "2025-09-04T14:34:22.711Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/29/16/c8a903f4c4dffe7a12843191437d7cd8e32751d5de349d45d3fe69544e87/pytest-8.4.1-py3-none-any.whl", hash = "sha256:539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7", size = 365474, upload-time = "2025-06-18T05:48:03.955Z" },
+    { url = "https://files.pythonhosted.org/packages/a8/a4/20da314d277121d6534b3a980b29035dcd51e6744bd79075a6ce8fa4eb8d/pytest-8.4.2-py3-none-any.whl", hash = "sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79", size = 365750, upload-time = "2025-09-04T14:34:20.226Z" },
 ]
 
 [[package]]
