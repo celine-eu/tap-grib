@@ -43,6 +43,7 @@ dev = [
     "meltano>=3.9.1",
     "moto[s3]>=5.1.16",
     "pytest>=8.4.1",
+    "python-semantic-release>=10.4.1",
 ]
 test = [
     "pytest>=8",
@@ -110,3 +111,16 @@ commands = [ [ "pytest", { replace = "posargs", default = [ "tests" ], extend = 
 dependency_groups = [ "test", "typing" ]
 commands = [ [ "mypy", { replace = "posargs", default = [ "tap_grib", "tests" ], extend = true } ] ]
 
+
+
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+update_pyproject_toml = true 
+commit_parser = "conventional"
+
+[tool.semantic_release.commit_parser_options]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+parse_squash_commits = true
+ignore_merge_commits = true
