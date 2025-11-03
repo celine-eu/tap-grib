@@ -62,7 +62,7 @@ class Storage:
         )
         if isinstance(mtime_val, (int, float)):
             mtime = datetime.fromtimestamp(mtime_val, tz=timezone.utc)
-        elif hasattr(mtime_val, "timestamp"):
+        elif callable(getattr(mtime_val, "timestamp", None)):
             mtime = datetime.fromtimestamp(mtime_val.timestamp(), tz=timezone.utc)
         elif isinstance(mtime_val, str):
             try:
@@ -73,9 +73,15 @@ class Storage:
         else:
             mtime = datetime.now(timezone.utc)
 
+        size_val = info.get("size") or info.get("Size")
+        try:
+            size = int(size_val) if size_val is not None else None
+        except (TypeError, ValueError):
+            size = None
+
         return FileInfo(
             path=self.normalize_path(path),
-            size=info.get("size"),
+            size=size,
             mtime=mtime.replace(microsecond=0),
         )
 
