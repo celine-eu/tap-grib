@@ -62,13 +62,14 @@ class TapGrib(Tap):
             storage = Storage(path)
 
             for file_path in storage.glob():
-                stream_name = table_name or self.default_stream_name(file_path)
-
+                normalized_path = storage.normalize_path(file_path)
+                stream_name = table_name or self.default_stream_name(normalized_path)
+                self.logger.info(f"Found file {normalized_path}")
                 streams.append(
                     GribStream(
                         tap=self,
                         name=stream_name,
-                        file_path=file_path,
+                        file_path=normalized_path,
                         primary_keys=["datetime", "lat", "lon", "variable"],
                         ignore_fields=ignore_fields,
                     )

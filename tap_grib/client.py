@@ -3,8 +3,11 @@ from datetime import datetime, timezone
 from singer_sdk.streams import Stream
 from singer_sdk import typing as th
 import typing as t
-import os
 from tap_grib.storage import Storage
+import tempfile
+import shutil
+import os
+import pygrib
 
 SDC_INCREMENTAL_KEY = "_sdc_last_modified"
 SDC_FILENAME = "_sdc_filename"
@@ -121,23 +124,11 @@ class GribStream(Stream):
     ]:
         self.logger.info(f"[{self.name}] Streaming records from {self.file_path}")
 
-        filename = os.path.basename(self.file_path)
-        partition_context = {SDC_FILENAME: filename}
-        last_bookmark = self.get_starting_replication_key_value(partition_context)
-
-        bookmark_dt: datetime | None = None
-        if last_bookmark:
-            bookmark_dt = datetime.fromisoformat(last_bookmark)
-            if bookmark_dt.tzinfo is None:
-                bookmark_dt = bookmark_dt.replace(tzinfo=timezone.utc)
-            else:
-                bookmark_dt = bookmark_dt.astimezone(timezone.utc)
-
         storage = Storage(self.file_path)
         info = storage.describe(self.file_path)
         mtime = info.mtime
 
-        filename = os.path.basename(info.path)
+        filename = info.path
         partition_context = {SDC_FILENAME: filename}
         last_bookmark = self.get_starting_replication_key_value(partition_context)
 
@@ -149,7 +140,15 @@ class GribStream(Stream):
             else:
                 bookmark_dt = bookmark_dt.astimezone(timezone.utc)
 
-        # skip file entirely if mtime <= bookmark
+            # skip file entirely if mtime <= bookmark
+
+            self.logger.info(
+                "%s (mtime=%s VS bookmark=%s)",
+                self.file_path,
+                mtime,
+                bookmark_dt,
+            )
+
         if bookmark_dt and mtime <= bookmark_dt:
             self.logger.info(
                 "Skipping %s (mtime=%s <= bookmark=%s)",
@@ -159,11 +158,18 @@ class GribStream(Stream):
             )
             return []
 
-        # open GRIB file through fsspec handle (local or remote)
-        with storage.open(self.file_path, "rb") as fh:
-            import pygrib
+        # open GRIB file (works for remote by copying to tmp first)
+        tmp_path: str | None = None
+        with storage.open(self.file_path, "rb") as src:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".grib") as tmp:
+                shutil.copyfileobj(src, tmp)
+                tmp_path = tmp.name
 
-            with pygrib.open(self.file_path) as grbs:
+        try:
+            if tmp_path is None:
+                raise Exception(f"temporary file path (tmp_path) is not available")
+
+            with pygrib.open(tmp_path) as grbs:  # type: ignore[attr-defined]
                 for msg in grbs:
                     try:
                         lats, lons, vals = _extract_grid(msg)
@@ -222,3 +228,10 @@ class GribStream(Stream):
                     {SDC_INCREMENTAL_KEY: mtime.isoformat()},
                     context=partition_context,
                 )
+        except Exception as e:
+            self.logger.error(f"Failed to process grib {self.file_path}: {e}")
+        finally:
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
