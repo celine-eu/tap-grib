@@ -156,7 +156,7 @@ class GribStream(Stream):
                 mtime,
                 bookmark_dt,
             )
-            return []
+            return
 
         # open GRIB file (works for remote by copying to tmp first)
         tmp_path: str | None = None

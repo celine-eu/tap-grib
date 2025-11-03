@@ -38,12 +38,14 @@ tap-grib = 'tap_grib.tap:TapGrib.cli'
 [dependency-groups]
 dev = [
     { include-group = "test" },
+    "boto3>=1.39.11",
     "flask>=3.1.2",
     "flask-cors>=6.0.1",
     "meltano>=3.9.1",
-    "moto[s3]>=5.1.16",
+    "moto[s3,server]>=5.1.16",
     "pytest>=8.4.1",
     "python-semantic-release>=10.4.1",
+    "types-boto3>=1.40.64",
 ]
 test = [
     "pytest>=8",
@@ -111,7 +113,9 @@ commands = [ [ "pytest", { replace = "posargs", default = [ "tests" ], extend = 
 dependency_groups = [ "test", "typing" ]
 commands = [ [ "mypy", { replace = "posargs", default = [ "tap_grib", "tests" ], extend = true } ] ]
 
-
+[[tool.mypy.overrides]]
+module = ["boto3.*", "moto.*"]
+ignore_missing_imports = true
 
 
 [tool.semantic_release]
