@@ -80,6 +80,15 @@ config:
         - centre
         - edition
 
+    # test with local docker compose (eg. docker compose up)
+    - path: s3://local-data/test.grib
+      ignore_fields:
+        - ensemble
+        - grid_type
+        - centre
+        - edition
+
+
 ```
 
 To use an S3-based storage ensure to provide those envirnoment variables: 
