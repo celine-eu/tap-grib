@@ -3100,6 +3100,7 @@ name = "tap-grib"
 version = "1.0.0"
 source = { editable = "." }
 dependencies = [
+    { name = "boto3" },
     { name = "pygrib" },
     { name = "s3fs" },
     { name = "singer-sdk", extra = ["faker"] },
@@ -3135,6 +3136,7 @@ typing = [
 
 [package.metadata]
 requires-dist = [
+    { name = "boto3", specifier = ">=1.39.11" },
     { name = "pygrib", specifier = ">=2.1.6" },
     { name = "s3fs", specifier = ">=2025.9.0" },
     { name = "s3fs", marker = "extra == 's3'", specifier = "~=2025.9.0" },
