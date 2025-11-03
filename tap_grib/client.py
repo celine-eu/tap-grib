@@ -1,10 +1,10 @@
 import numpy as np
-import pygrib
 from datetime import datetime, timezone
 from singer_sdk.streams import Stream
 from singer_sdk import typing as th
 import typing as t
 import os
+from tap_grib.storage import Storage
 
 SDC_INCREMENTAL_KEY = "_sdc_last_modified"
 SDC_FILENAME = "_sdc_filename"
@@ -122,7 +122,7 @@ class GribStream(Stream):
         self.logger.info(f"[{self.name}] Streaming records from {self.file_path}")
 
         filename = os.path.basename(self.file_path)
-        partition_context = {"filename": filename}
+        partition_context = {SDC_FILENAME: filename}
         last_bookmark = self.get_starting_replication_key_value(partition_context)
 
         bookmark_dt: datetime | None = None
@@ -133,9 +133,21 @@ class GribStream(Stream):
             else:
                 bookmark_dt = bookmark_dt.astimezone(timezone.utc)
 
-        mtime = datetime.fromtimestamp(
-            os.path.getmtime(self.file_path), tz=timezone.utc
-        )
+        storage = Storage(self.file_path)
+        info = storage.describe(self.file_path)
+        mtime = info.mtime
+
+        filename = os.path.basename(info.path)
+        partition_context = {SDC_FILENAME: filename}
+        last_bookmark = self.get_starting_replication_key_value(partition_context)
+
+        bookmark_dt: datetime | None = None
+        if last_bookmark:
+            bookmark_dt = datetime.fromisoformat(last_bookmark)
+            if bookmark_dt.tzinfo is None:
+                bookmark_dt = bookmark_dt.replace(tzinfo=timezone.utc)
+            else:
+                bookmark_dt = bookmark_dt.astimezone(timezone.utc)
 
         # skip file entirely if mtime <= bookmark
         if bookmark_dt and mtime <= bookmark_dt:
@@ -147,62 +159,66 @@ class GribStream(Stream):
             )
             return []
 
-        with pygrib.open(self.file_path) as grbs:
-            for msg in grbs:
-                try:
-                    lats, lons, vals = _extract_grid(msg)
-                except Exception as e:
-                    self.logger.warning(f"Skipping message: {e}")
-                    continue
-                if lats.size == 0:
-                    continue
+        # open GRIB file through fsspec handle (local or remote)
+        with storage.open(self.file_path, "rb") as fh:
+            import pygrib
 
-                # safe datetime extraction
-                valid_dt = getattr(msg, "validDate", None)
-                if valid_dt is None:
-                    date = getattr(msg, "dataDate", None)
-                    time = getattr(msg, "dataTime", 0)
-                    if date:
-                        year = date // 10000
-                        month = (date // 100) % 100
-                        day = date % 100
-                        hour = time // 100
-                        minute = time % 100
-                        valid_dt = datetime(
-                            year, month, day, hour, minute, tzinfo=timezone.utc
-                        )
-
-                base_record = {
-                    "datetime": valid_dt,
-                    "level_type": safe_get(msg, "typeOfLevel", None),
-                    "level": safe_get(msg, "level", None),
-                    "name": safe_get(msg, "shortName", None),
-                    "ensemble": safe_get(msg, "perturbationNumber", None),
-                    "forecast_step": safe_get(msg, "step", None),
-                    "edition": safe_get(msg, "edition", None),
-                    "centre": safe_get(msg, "centre", None),
-                    "data_type": safe_get(msg, "dataType", None),
-                    "grid_type": safe_get(msg, "gridType", None),
-                    SDC_INCREMENTAL_KEY: mtime,
-                    SDC_FILENAME: filename,
-                }
-
-                for lat, lon, val in zip(lats, lons, vals):
-                    if val is None or (hasattr(val, "mask") and val.mask):
+            with pygrib.open(self.file_path) as grbs:
+                for msg in grbs:
+                    try:
+                        lats, lons, vals = _extract_grid(msg)
+                    except Exception as e:
+                        self.logger.warning(f"Skipping message: {e}")
                         continue
-                    rec = dict(base_record)
-                    rec["lat"] = float(lat)
-                    rec["lon"] = float(lon)
-                    rec["value"] = float(val)
+                    if lats.size == 0:
+                        continue
 
-                    # drop ignored fields
-                    for f in self.ignore_fields:
-                        rec.pop(f, None)
+                    # safe datetime extraction
+                    valid_dt = getattr(msg, "validDate", None)
+                    if valid_dt is None:
+                        date = getattr(msg, "dataDate", None)
+                        time = getattr(msg, "dataTime", 0)
+                        if date:
+                            year = date // 10000
+                            month = (date // 100) % 100
+                            day = date % 100
+                            hour = time // 100
+                            minute = time % 100
+                            valid_dt = datetime(
+                                year, month, day, hour, minute, tzinfo=timezone.utc
+                            )
 
-                    yield rec
+                    base_record = {
+                        "datetime": valid_dt,
+                        "level_type": safe_get(msg, "typeOfLevel", None),
+                        "level": safe_get(msg, "level", None),
+                        "name": safe_get(msg, "shortName", None),
+                        "ensemble": safe_get(msg, "perturbationNumber", None),
+                        "forecast_step": safe_get(msg, "step", None),
+                        "edition": safe_get(msg, "edition", None),
+                        "centre": safe_get(msg, "centre", None),
+                        "data_type": safe_get(msg, "dataType", None),
+                        "grid_type": safe_get(msg, "gridType", None),
+                        SDC_INCREMENTAL_KEY: mtime,
+                        SDC_FILENAME: filename,
+                    }
 
-            # advance bookmark with the latest seen mtime
-            self._increment_stream_state(
-                {SDC_INCREMENTAL_KEY: mtime.isoformat()},
-                context=partition_context,
-            )
+                    for lat, lon, val in zip(lats, lons, vals):
+                        if val is None or (hasattr(val, "mask") and val.mask):
+                            continue
+                        rec = dict(base_record)
+                        rec["lat"] = float(lat)
+                        rec["lon"] = float(lon)
+                        rec["value"] = float(val)
+
+                        # drop ignored fields
+                        for f in self.ignore_fields:
+                            rec.pop(f, None)
+
+                        yield rec
+
+                # advance bookmark with the latest seen mtime
+                self._increment_stream_state(
+                    {SDC_INCREMENTAL_KEY: mtime.isoformat()},
+                    context=partition_context,
+                )

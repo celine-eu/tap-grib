@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 import os
-import glob
 from singer_sdk import Tap, Stream
 from singer_sdk import typing as th
 from singer_sdk.helpers.capabilities import TapCapabilities, CapabilitiesEnum
 import re
 from tap_grib.client import GribStream
 import typing as t
+from tap_grib.storage import Storage
 
 
 class TapGrib(Tap):
@@ -59,7 +59,9 @@ class TapGrib(Tap):
             ignore_fields = set(entry.get("ignore_fields", []))
             table_name = entry.get("table_name")
 
-            for file_path in glob.glob(path):
+            storage = Storage(path)
+
+            for file_path in storage.glob():
                 stream_name = table_name or self.default_stream_name(file_path)
 
                 streams.append(
