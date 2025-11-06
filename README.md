@@ -48,7 +48,7 @@ grib_ls ./data/test.grib  | less
 
 | Setting | Required | Default | Description |
 |:--------|:--------:|:-------:|:------------|
-| paths | True | None | List of GRIB file path definitions. |
+| paths | True | None | List of GRIB file path definitions (supports globs). |
 | stream_maps | False | None | Config object for stream maps capability. For more information check out [Stream Maps](https://sdk.meltano.com/en/latest/stream_maps.html). |
 | stream_maps.__else__ | False | None | Currently, only setting this to `__NULL__` is supported. This will remove all other streams. |
 | stream_map_config | False | None | User-defined config values to be used within map expressions. |
@@ -71,6 +71,9 @@ config:
   paths:
     # all values in a table
     - path: ./data/test.grib
+      # optional bbox filter, skip records outside the bbox
+      # format for bbox is [north_lat, west_lon, south_lat, east_lon]
+      bbox: [7.0, 45.0, 12.0, 48.0]  # Western Europe
       # optional table name, defaults to file name
       table_name: my_table
       # skip the listed columns
@@ -82,6 +85,7 @@ config:
 
     # test with local docker compose (eg. docker compose up)
     - path: s3://local-data/test.grib
+      table_name: s3_test
       ignore_fields:
         - ensemble
         - grid_type

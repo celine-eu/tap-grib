@@ -24,12 +24,21 @@ plugins:
             List of GRIB file paths or glob patterns.
       config:
         paths:
-          - path: ./data/test.grib
-            ignore_fields:
-              - ensemble
-              - grid_type
-              - centre
-              - edition
+          # - path: ./data/test.grib
+          #   ignore_fields:
+          #     - ensemble
+          #     - grid_type
+          #     - centre
+          #     - edition
+
+          - path: ./data/icon-d2*.grib2
+            table_name: icon_d2
+            bbox: [46, 11, 45, 12]
+            # ignore_fields:
+            #   - ensemble
+            #   - grid_type
+            #   - centre
+            #   - edition
 
           # - path: s3://local-data/test.grib
           #   ignore_fields:

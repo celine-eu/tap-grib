@@ -1,5 +1,6 @@
 data/*.idx
 data/*.grib
+data/*.grib2
 !data/test.grib
 
 # Secrets and internal config files
