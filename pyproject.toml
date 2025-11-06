@@ -24,7 +24,7 @@ dependencies = [
     "boto3>=1.39.11",
     "pygrib>=2.1.6",
     "s3fs>=2025.9.0",
-    "singer-sdk[faker]~=0.48.1",
+    "singer-sdk[faker]>=0.48.1,<0.53.0",
 ]
 
 [project.optional-dependencies]
