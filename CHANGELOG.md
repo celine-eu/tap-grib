@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.1.0 (2025-11-06)
+
+### Features
+
+- Add bbox filtering
+  ([`4f6d3ce`](https://github.com/celine-eu/tap-grib/commit/4f6d3ce49e86a64620dafe0560f9c325b1716884))
+
+
 ## v1.0.1 (2025-11-03)
 
 ### Bug Fixes
