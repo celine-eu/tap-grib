@@ -33,7 +33,8 @@ plugins:
 
           - path: ./data/icon-d2*.grib2
             table_name: icon_d2
-            bbox: [46, 11, 45, 12]
+            bboxes:
+              - [46, 11, 45, 12]
             # ignore_fields:
             #   - ensemble
             #   - grid_type

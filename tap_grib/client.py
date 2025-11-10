@@ -62,13 +62,13 @@ class GribStream(Stream):
         primary_keys: list[str] | None = None,
         ignore_fields: set[str] | None = None,
         extra_files: list[str] | None = None,
-        bbox: tuple[float, float, float, float] | None = None,
+        bboxes: list[tuple[float, float, float, float]] | None = None,
         **kwargs,
     ):
         self.file_path = file_path
         self.extra_files = extra_files or ([file_path] if file_path else [])
         self.primary_keys = primary_keys or ["datetime", "lat", "lon", "name"]
-        self.bbox = bbox
+        self.bboxes = bboxes
 
         ignore_fields = ignore_fields or set()
         invalid = ignore_fields & self.CORE_FIELDS
@@ -238,13 +238,19 @@ class GribStream(Stream):
                             if val is None or (hasattr(val, "mask") and val.mask):
                                 continue
 
-                            if self.bbox:
-                                min_lon, min_lat, max_lon, max_lat = self.bbox
-                                if not (
-                                    min_lon <= lon <= max_lon
-                                    and min_lat <= lat <= max_lat
-                                ):
-                                    continue  # skip point outside bbox
+                            if self.bboxes:
+                                valid_bbox = False
+                                for bbox in self.bboxes:
+                                    min_lon, min_lat, max_lon, max_lat = bbox
+                                    if (
+                                        min_lon <= lon <= max_lon
+                                        and min_lat <= lat <= max_lat
+                                    ):
+                                        valid_bbox = True
+                                        break  # found one match, keep the record
+                                if not valid_bbox:
+                                    # skip record
+                                    continue
 
                             rec = dict(base_record)
                             rec["lat"] = float(lat)

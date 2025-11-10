@@ -71,9 +71,10 @@ config:
   paths:
     # all values in a table
     - path: ./data/test.grib
-      # optional bbox filter, skip records outside the bbox
+      # optional bboxes filter, skip records outside the bbox
       # format for bbox is [north_lat, west_lon, south_lat, east_lon]
-      bbox: [7.0, 45.0, 12.0, 48.0]  # Western Europe
+      bboxes: 
+       - [7.0, 45.0, 12.0, 48.0]  # Western Europe
       # optional table name, defaults to file name
       table_name: my_table
       # skip the listed columns
