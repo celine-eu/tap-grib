@@ -2,6 +2,37 @@
 
 <!-- version list -->
 
+## v1.2.0 (2025-11-10)
+
+### Chores
+
+- Up lock
+  ([`203b3af`](https://github.com/celine-eu/tap-grib/commit/203b3af002882b530b359dd333acf9205f995229))
+
+- Update lock
+  ([`ba720a9`](https://github.com/celine-eu/tap-grib/commit/ba720a9a12eb16427dc8a39f576f2c15c5233054))
+
+- **deps**: Bump boto3 from 1.39.11 to 1.40.64
+  ([`435b7a4`](https://github.com/celine-eu/tap-grib/commit/435b7a482cad89059cf0d60a155a370e75641cd7))
+
+- **deps**: Bump meltano from 3.9.1 to 4.0.4
+  ([`0616881`](https://github.com/celine-eu/tap-grib/commit/061688150bf8cfb977f30a0a9786980437027276))
+
+- **deps**: Bump s3fs from 2025.9.0 to 2025.10.0
+  ([`b81441d`](https://github.com/celine-eu/tap-grib/commit/b81441da87a7edbfc84f8c77c8667240699eaefb))
+
+- **deps**: Bump types-requests from 2.32.4.20250809 to 2.32.4.20250913
+  ([`8c8a3a0`](https://github.com/celine-eu/tap-grib/commit/8c8a3a0ac0d203aee6557a286c28becde260e3da))
+
+- **deps**: Update singer-sdk[faker] requirement
+  ([`90aa727`](https://github.com/celine-eu/tap-grib/commit/90aa7279272db922d7c75b5bd012174323218058))
+
+### Features
+
+- Support for bboxes as array
+  ([`5e8812e`](https://github.com/celine-eu/tap-grib/commit/5e8812e04a4b0ad7fb20e2fac10777df97e335b1))
+
+
 ## v1.1.0 (2025-11-06)
 
 ### Features
