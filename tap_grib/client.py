@@ -1,5 +1,5 @@
 import numpy as np
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from singer_sdk.streams import Stream
 from singer_sdk import typing as th
 import typing as t
@@ -18,6 +18,61 @@ def safe_get(msg, key, default=None):
         return getattr(msg, key)
     except (AttributeError, RuntimeError):
         return default
+
+
+def _compute_time_metadata(msg: t.Any, valid_dt: datetime | None):
+    """
+    Best-effort extraction of forecast time metadata in a generic way.
+
+    Returns:
+        base_datetime: analysis/reference time of the forecast (if known)
+        forecast_time: numeric forecast time (if known)
+        forecast_time_units: units of forecast_time (string, if known)
+    """
+    # 1) Start with pygrib's analDate (analysis/reference time)
+    base_dt = safe_get(msg, "analDate", None)
+
+    # 2) Fallback to dataDate/dataTime if present
+    if base_dt is None:
+        data_date = safe_get(msg, "dataDate", None)
+        data_time = safe_get(msg, "dataTime", None)
+        if data_date is not None:
+            year = data_date // 10000
+            month = (data_date // 100) % 100
+            day = data_date % 100
+            if data_time is None:
+                data_time = 0
+            hour = data_time // 100
+            minute = data_time % 100
+            base_dt = datetime(year, month, day, hour, minute, tzinfo=timezone.utc)
+
+    # 3) Raw forecast time and its units (generic GRIB/pygrib interface)
+    forecast_time = safe_get(msg, "forecastTime", None)
+    forecast_time_units = safe_get(msg, "fcstimeunits", None)
+
+    # 4) As a last resort, derive base_dt from valid_dt and forecast_time
+    #    using the declared forecast_time_units.
+    if (
+        base_dt is None
+        and valid_dt is not None
+        and isinstance(forecast_time, (int, float))
+        and forecast_time_units
+    ):
+        units = forecast_time_units.lower()
+        try:
+            if "hour" in units:
+                base_dt = valid_dt - timedelta(hours=float(forecast_time))
+            elif "min" in units:
+                base_dt = valid_dt - timedelta(minutes=float(forecast_time))
+            elif "sec" in units:
+                base_dt = valid_dt - timedelta(seconds=float(forecast_time))
+            elif "day" in units:
+                base_dt = valid_dt - timedelta(days=float(forecast_time))
+        except Exception:
+            # If anything goes wrong, just leave base_dt as None
+            pass
+
+    return base_dt, forecast_time, forecast_time_units
 
 
 def _extract_grid(msg: t.Any):
@@ -90,6 +145,7 @@ class GribStream(Stream):
     def schema(self) -> dict:
         props: t.List[th.Property] = [
             th.Property("datetime", th.DateTimeType()),
+            th.Property("base_datetime", th.DateTimeType(nullable=True)),
             th.Property("lat", th.NumberType()),
             th.Property("lon", th.NumberType()),
             th.Property("level_type", th.StringType(nullable=True)),
@@ -98,6 +154,8 @@ class GribStream(Stream):
             th.Property("value", th.NumberType()),
             th.Property("ensemble", th.IntegerType(nullable=True)),
             th.Property("forecast_step", th.NumberType(nullable=True)),
+            th.Property("forecast_time", th.NumberType(nullable=True)),
+            th.Property("forecast_time_units", th.StringType(nullable=True)),
             th.Property("edition", th.IntegerType(nullable=True)),
             th.Property("centre", th.StringType(nullable=True)),
             th.Property("data_type", th.StringType(nullable=True)),
@@ -219,13 +277,20 @@ class GribStream(Stream):
                             except Exception:
                                 forecast_step = None
 
+                        base_dt, forecast_time, forecast_time_units = (
+                            _compute_time_metadata(msg, valid_dt)
+                        )
+
                         base_record = {
                             "datetime": valid_dt,
+                            "base_datetime": base_dt,
                             "level_type": safe_get(msg, "typeOfLevel", None),
                             "level": safe_get(msg, "level", None),
                             "name": safe_get(msg, "shortName", None),
                             "ensemble": safe_get(msg, "perturbationNumber", None),
                             "forecast_step": forecast_step,
+                            "forecast_time": forecast_time,
+                            "forecast_time_units": forecast_time_units,
                             "edition": safe_get(msg, "edition", None),
                             "centre": safe_get(msg, "centre", None),
                             "data_type": safe_get(msg, "dataType", None),
