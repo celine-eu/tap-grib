@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.3.0 (2025-11-24)
+
+### Features
+
+- Add base datetime, forecast time and unit
+  ([`97e08f6`](https://github.com/celine-eu/tap-grib/commit/97e08f6fc204b4950ecb0479cad054f5d8a590cb))
+
+
 ## v1.2.0 (2025-11-10)
 
 ### Chores
