@@ -95,7 +95,7 @@ class TapGrib(Tap):
             min_lon, min_lat, max_lon, max_lat = west, south, east, north
 
             valid_bboxes.append((min_lon, min_lat, max_lon, max_lat))
-            return valid_bboxes
+        return valid_bboxes
 
     def default_stream_name(self, pattern: str) -> str:
         base = os.path.splitext(os.path.basename(pattern))[0]
