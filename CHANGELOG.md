@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.3.1 (2025-11-24)
+
+### Bug Fixes
+
+- Missing return on bbox check
+  ([`e44964d`](https://github.com/celine-eu/tap-grib/commit/e44964d35b29ac1cfda7ee76aef86c21e1fd9191))
+
+### Chores
+
+- Update uv.sync
+  ([`17141e0`](https://github.com/celine-eu/tap-grib/commit/17141e020eb134ee422511dd550b53a7f30ae39c))
+
+
 ## v1.3.0 (2025-11-24)
 
 ### Features
