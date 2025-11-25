@@ -122,7 +122,13 @@ class GribStream(Stream):
     ):
         self.file_path = file_path
         self.extra_files = extra_files or ([file_path] if file_path else [])
-        self.primary_keys = primary_keys or ["datetime", "lat", "lon", "name"]
+        self.primary_keys = primary_keys or [
+            "base_datetime",
+            "datetime",
+            "lat",
+            "lon",
+            "name",
+        ]
         self.bboxes = bboxes
 
         ignore_fields = ignore_fields or set()

@@ -134,7 +134,7 @@ class TapGrib(Tap):
                     tap=self,
                     name=stream_name,
                     file_path=None,
-                    primary_keys=["datetime", "lat", "lon", "variable"],
+                    primary_keys=self.config.get("primary_keys", None),
                     ignore_fields=ignore_fields,
                     extra_files=file_list,
                     bboxes=bboxes,
