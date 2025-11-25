@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.3.2 (2025-11-25)
+
+### Bug Fixes
+
+- Use primary_keys value
+  ([`cabf07d`](https://github.com/celine-eu/tap-grib/commit/cabf07dc1b7d123f20d12e1d2697299928ee6183))
+
+### Chores
+
+- Updpate uv.sync
+  ([`178ab87`](https://github.com/celine-eu/tap-grib/commit/178ab87f13b726e40462bfeba538140bb429c8aa))
+
+
 ## v1.3.1 (2025-11-24)
 
 ### Bug Fixes
