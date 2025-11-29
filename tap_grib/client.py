@@ -115,6 +115,8 @@ class GribStream(Stream):
         *,
         file_path: str | None,
         primary_keys: list[str] | None = None,
+        skip_past_reference: str | None = None,
+        skip_past: bool | None = False,
         ignore_fields: set[str] | None = None,
         extra_files: list[str] | None = None,
         bboxes: list[tuple[float, float, float, float]] | None = None,
@@ -130,6 +132,24 @@ class GribStream(Stream):
             "name",
         ]
         self.bboxes = bboxes
+
+        self.skip_past = skip_past
+
+        ref_dt: datetime | None = None
+        if skip_past_reference:
+            try:
+                ref_dt = datetime.fromisoformat(skip_past_reference)
+                if ref_dt.tzinfo is None:
+                    ref_dt = ref_dt.replace(tzinfo=timezone.utc)
+                else:
+                    ref_dt = ref_dt.astimezone(timezone.utc)
+            except Exception:
+                tap.logger.warning(
+                    "Invalid skip_past_reference_datetime '%s', ignoring",
+                    skip_past_reference,
+                )
+
+        self.skip_past_reference: datetime | None = ref_dt
 
         ignore_fields = ignore_fields or set()
         invalid = ignore_fields & self.CORE_FIELDS
@@ -238,6 +258,12 @@ class GribStream(Stream):
                     raise Exception(f"temporary file path (tmp_path) is not available")
 
                 with pygrib.open(tmp_path) as grbs:  # type: ignore[attr-defined]
+
+                    # Compute cutoff once per file
+                    cutoff: datetime | None = None
+                    if self.skip_past:
+                        cutoff = self.skip_past_reference or datetime.now(timezone.utc)
+
                     for msg in grbs:
                         try:
                             lats, lons, vals = _extract_grid(msg)
@@ -246,6 +272,15 @@ class GribStream(Stream):
                             continue
                         if lats.size == 0:
                             continue
+
+                        for msg in grbs:
+                            try:
+                                lats, lons, vals = _extract_grid(msg)
+                            except Exception as e:
+                                self.logger.warning(f"Skipping message: {e}")
+                                continue
+                            if lats.size == 0:
+                                continue
 
                         # safe datetime extraction
                         valid_dt = getattr(msg, "validDate", None)
@@ -261,6 +296,22 @@ class GribStream(Stream):
                                 valid_dt = datetime(
                                     year, month, day, hour, minute, tzinfo=timezone.utc
                                 )
+
+                        if isinstance(valid_dt, datetime):
+                            if valid_dt.tzinfo is None:
+                                valid_dt = valid_dt.replace(tzinfo=timezone.utc)
+                            else:
+                                valid_dt = valid_dt.astimezone(timezone.utc)
+                        else:
+                            valid_dt = None
+
+                        if (
+                            cutoff is not None
+                            and valid_dt is not None
+                            and valid_dt < cutoff
+                        ):
+                            # this forecast is already in the past; drop the whole message
+                            continue
 
                         raw_step = safe_get(msg, "step", None)
                         forecast_step = None

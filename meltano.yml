@@ -35,6 +35,7 @@ plugins:
             table_name: icon_d2
             bboxes:
               - [46, 11, 45, 12]
+            skip_past: true
             # ignore_fields:
             #   - ensemble
             #   - grid_type

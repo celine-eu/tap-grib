@@ -46,6 +46,18 @@ class TapGrib(Tap):
                         description="Optional list of geographic bounding box [[min_lon, min_lat, max_lon, max_lat]]. "
                         "Records outside this range will be skipped.",
                     ),
+                    th.Property(
+                        "skip_past",
+                        th.BooleanType(),
+                        required=False,
+                        description="Optional skip forecast that are past now",
+                    ),
+                    th.Property(
+                        "skip_past_reference",
+                        th.DateTimeType(),
+                        required=False,
+                        description="Optional reference date for skip past",
+                    ),
                 )
             ),
             required=True,
@@ -112,6 +124,9 @@ class TapGrib(Tap):
             table_name = entry.get("table_name")
             bboxes = self._parse_bboxes(entry.get("bboxes"))
 
+            skip_past = entry.get("skip_past", False)
+            skip_past_reference = entry.get("skip_past_reference", None)
+
             storage = Storage(pattern)
             file_list = list(storage.glob())
             if not file_list:
@@ -138,6 +153,8 @@ class TapGrib(Tap):
                     ignore_fields=ignore_fields,
                     extra_files=file_list,
                     bboxes=bboxes,
+                    skip_past=skip_past,
+                    skip_past_reference=skip_past_reference,
                 )
             )
 

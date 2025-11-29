@@ -83,6 +83,10 @@ config:
         - grid_type
         - centre
         - edition
+      # drop messages from the past
+      skip_past: True
+      # drop messages before this reference date, defaults to now
+      # skip_past_reference: 2025-01-01
 
     # test with local docker compose (eg. docker compose up)
     - path: s3://local-data/test.grib
