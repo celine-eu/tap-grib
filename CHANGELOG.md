@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.4.1 (2025-11-29)
+
+### Bug Fixes
+
+- Bump
+  ([`8f80b0f`](https://github.com/celine-eu/tap-grib/commit/8f80b0fa3956e04f67fc64264bd7530b997f30bf))
+
+### Chores
+
+- Add build in semantic release
+  ([`bd2cbfe`](https://github.com/celine-eu/tap-grib/commit/bd2cbfe4a4475f289ab998bcb7558468d9071f64))
+
+
 ## v1.4.0 (2025-11-29)
 
 ### Features
