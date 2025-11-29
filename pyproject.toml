@@ -125,7 +125,7 @@ update_pyproject_toml = true
 commit_parser = "conventional"
 
 build_command = """
-    uv lock --upgrade-package "$PACKAGE_NAME"
+    uv lock  --upgrade-package "$PACKAGE_NAME"
     git add uv.lock
     uv build
 """
