@@ -1,6 +1,6 @@
 [project]
 name = "tap-grib"
-version = "1.3.2"
+version = "1.4.0"
 description = "Singer tap for Grib, built with the Meltano Singer SDK."
 readme = "README.md"
 authors = [{ name = "Luca Capra", email = "luca.capra@spindox.it" }]

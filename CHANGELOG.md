@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.0 (2025-11-29)
+
+### Features
+
+- Add skip_past option
+  ([`7efface`](https://github.com/celine-eu/tap-grib/commit/7efface553b210f2266c9f5d06cd2db5c6ab65b6))
+
+
 ## v1.3.2 (2025-11-25)
 
 ### Bug Fixes
