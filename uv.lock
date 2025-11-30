@@ -3107,7 +3107,7 @@ wheels = [
 
 [[package]]
 name = "tap-grib"
-version = "1.4.2"
+version = "1.4.3"
 source = { editable = "." }
 dependencies = [
     { name = "boto3" },

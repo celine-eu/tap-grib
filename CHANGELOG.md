@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.3 (2025-11-30)
+
+### Bug Fixes
+
+- Review incremental keys handling. reorder PK definition
+  ([`4af079d`](https://github.com/celine-eu/tap-grib/commit/4af079d87149018ad9f1d89f8bc8cffedc3e4f0c))
+
+
 ## v1.4.2 (2025-11-30)
 
 ### Bug Fixes
