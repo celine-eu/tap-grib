@@ -13,6 +13,13 @@ SDC_INCREMENTAL_KEY = "_sdc_last_modified"
 SDC_FILENAME = "_sdc_filename"
 
 
+def parse_bookmark(val: str | None) -> datetime | None:
+    if not val:
+        return None
+    clean = val.replace("Z", "+00:00")
+    return datetime.fromisoformat(clean).astimezone(timezone.utc)
+
+
 def safe_get(msg, key, default=None):
     try:
         return getattr(msg, key)
@@ -103,8 +110,21 @@ def _extract_grid(msg: t.Any):
     return lats.ravel(), lons.ravel(), vals.ravel()
 
 
+def to_iso8601(dt: datetime) -> str:
+    return dt.astimezone(timezone.utc).replace(microsecond=0).isoformat()
+
+
 class GribStream(Stream):
     """Stream that reads records from a GRIB file in normalized (long) format."""
+
+    DEFAULT_PKEY = [
+        "base_datetime",
+        "datetime",
+        "forecast_step",
+        "lat",
+        "lon",
+        "name",
+    ]
 
     CORE_FIELDS = {"datetime", "lat", "lon", "name", "value"}
 
@@ -126,13 +146,9 @@ class GribStream(Stream):
 
         self.file_path = file_path
         self.extra_files = extra_files or ([file_path] if file_path else [])
-        self.primary_keys = primary_keys or [
-            "base_datetime",
-            "datetime",
-            "lat",
-            "lon",
-            "name",
-        ]
+
+        self.primary_keys = primary_keys or self.DEFAULT_PKEY
+
         self.bboxes = bboxes
 
         self.skip_past = skip_past
@@ -159,11 +175,14 @@ class GribStream(Stream):
             raise ValueError(f"Cannot ignore core fields: {', '.join(sorted(invalid))}")
         self.ignore_fields = ignore_fields
 
-        # super().__init__(tap=tap, name=name, **kwargs)
-
-        # self.state_partitioning_keys = [SDC_FILENAME]
+        self.state_partitioning_keys = [SDC_FILENAME]
         self.replication_key = SDC_INCREMENTAL_KEY
         self.forced_replication_method = "INCREMENTAL"
+
+    @property
+    def is_sorted(self) -> bool:
+        """The stream returns records in order."""
+        return False
 
     # --------------------------
     # Schema
@@ -210,57 +229,35 @@ class GribStream(Stream):
     ) -> t.Iterable[
         dict[str, t.Any] | tuple[dict[t.Any, t.Any], dict[t.Any, t.Any] | None]
     ]:
-
-        start_mtime: datetime | None = self.get_starting_timestamp(context)
-        if start_mtime and start_mtime.tzinfo is None:
-            start_mtime = start_mtime.replace(tzinfo=timezone.utc)
-        elif start_mtime:
-            start_mtime = start_mtime.astimezone(timezone.utc)
-
         for path in self.extra_files:
             self.logger.info(f"[{self.name}] Streaming records from {path}")
             storage = Storage(path)
             info = storage.describe(path)
             mtime = info.mtime
-
-            if start_mtime is not None and mtime is not None and mtime <= start_mtime:
-                self.logger.info(
-                    "Skipping %s (mtime=%s <= bookmark=%s)",
-                    path,
-                    mtime,
-                    start_mtime,
-                )
-                continue
-
             filename = info.path
-            partition_context = {SDC_FILENAME: filename}
-            last_bookmark = self.get_starting_replication_key_value(partition_context)
 
-            bookmark_dt: datetime | None = None
-            if last_bookmark:
-                bookmark_dt = datetime.fromisoformat(last_bookmark)
-                if bookmark_dt.tzinfo is None:
-                    bookmark_dt = bookmark_dt.replace(tzinfo=timezone.utc)
-                else:
-                    bookmark_dt = bookmark_dt.astimezone(timezone.utc)
+            last_bookmark = self.get_starting_replication_key_value(context)
 
-                # skip file entirely if mtime <= bookmark
+            bookmark_dt = parse_bookmark(last_bookmark)
 
-                self.logger.info(
-                    "%s (mtime=%s VS bookmark=%s)",
-                    self.file_path,
-                    mtime,
-                    bookmark_dt,
-                )
+            mtime = info.mtime
 
+            self.logger.debug(
+                "Partition context: %s, last_bookmark=%s, mtime=%s",
+                context,
+                bookmark_dt,
+                mtime,
+            )
+
+            # skip if already processed
             if bookmark_dt and mtime <= bookmark_dt:
                 self.logger.info(
                     "Skipping %s (mtime=%s <= bookmark=%s)",
-                    self.file_path,
+                    filename,
                     mtime,
                     bookmark_dt,
                 )
-                return
+                continue
 
             # open GRIB file (works for remote by copying to tmp first)
             tmp_path: str | None = None
@@ -359,7 +356,7 @@ class GribStream(Stream):
                             "centre": safe_get(msg, "centre", None),
                             "data_type": safe_get(msg, "dataType", None),
                             "grid_type": safe_get(msg, "gridType", None),
-                            SDC_INCREMENTAL_KEY: mtime,
+                            SDC_INCREMENTAL_KEY: to_iso8601(mtime),
                             SDC_FILENAME: filename,
                         }
 
@@ -394,8 +391,8 @@ class GribStream(Stream):
 
                     # advance bookmark with the latest seen mtime
                     self._increment_stream_state(
-                        {SDC_INCREMENTAL_KEY: mtime.isoformat()},
-                        context=partition_context,
+                        {SDC_INCREMENTAL_KEY: to_iso8601(mtime)},
+                        context=context,
                     )
             except Exception as e:
                 self.logger.error(f"Failed to process grib {self.file_path}: {e}")
@@ -404,3 +401,8 @@ class GribStream(Stream):
                     os.remove(tmp_path)
                 except Exception:
                     pass
+
+            self._increment_stream_state(
+                {SDC_INCREMENTAL_KEY: to_iso8601(mtime)},
+                context=context,
+            )
