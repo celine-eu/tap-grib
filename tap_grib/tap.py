@@ -111,8 +111,15 @@ class TapGrib(Tap):
 
     def default_stream_name(self, pattern: str) -> str:
         base = os.path.splitext(os.path.basename(pattern))[0]
-        safe = re.sub(r"[^0-9a-zA-Z]+", "_", base)
-        return safe.strip("_").lower()
+
+        # sanitize
+        safe = re.sub(r"[^0-9a-zA-Z]+", "_", base).strip("_").lower()
+
+        # Fallback if empty
+        if not safe:
+            safe = "grib_stream"
+
+        return safe
 
     def discover_streams(self) -> list[Stream]:
         """Discover a single stream per path pattern (merging all matching files)."""

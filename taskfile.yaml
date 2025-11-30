@@ -1,9 +1,21 @@
 version: "3"
 
 tasks:
+  run:
+    env:
+      S3_ACCESS_KEY_ID: minioadmin
+      S3_SECRET_ACCESS_KEY: minioadmin
+      S3_BUCKET: local-data
+      S3_ENDPOINT_URL: http://localhost:9000
+    cmds:
+      - uv run meltano run tap-grib target-jsonl {{.CLI_ARGS}}
+
+  run:refresh:
+    cmds:
+      - task run -- --full-refresh
+
   release:
     cmds:
-      # - uv lock --upgrade-package mqtt-ingestor
       - uv run semantic-release -v version --no-vcs-release
       - git push
       - git push --tags

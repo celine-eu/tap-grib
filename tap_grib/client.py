@@ -112,8 +112,7 @@ class GribStream(Stream):
         self,
         tap,
         name: str,
-        *,
-        file_path: str | None,
+        file_path: str | None = None,
         primary_keys: list[str] | None = None,
         skip_past_reference: str | None = None,
         skip_past: bool | None = False,
@@ -122,6 +121,9 @@ class GribStream(Stream):
         bboxes: list[tuple[float, float, float, float]] | None = None,
         **kwargs,
     ):
+
+        super().__init__(tap=tap, name=name, **kwargs)
+
         self.file_path = file_path
         self.extra_files = extra_files or ([file_path] if file_path else [])
         self.primary_keys = primary_keys or [
@@ -157,10 +159,9 @@ class GribStream(Stream):
             raise ValueError(f"Cannot ignore core fields: {', '.join(sorted(invalid))}")
         self.ignore_fields = ignore_fields
 
-        # now call parent init with only tap/name/kwargs
-        super().__init__(tap=tap, name=name, **kwargs)
+        # super().__init__(tap=tap, name=name, **kwargs)
 
-        self.state_partitioning_keys = [SDC_FILENAME]
+        # self.state_partitioning_keys = [SDC_FILENAME]
         self.replication_key = SDC_INCREMENTAL_KEY
         self.forced_replication_method = "INCREMENTAL"
 
@@ -210,11 +211,26 @@ class GribStream(Stream):
         dict[str, t.Any] | tuple[dict[t.Any, t.Any], dict[t.Any, t.Any] | None]
     ]:
 
+        start_mtime: datetime | None = self.get_starting_timestamp(context)
+        if start_mtime and start_mtime.tzinfo is None:
+            start_mtime = start_mtime.replace(tzinfo=timezone.utc)
+        elif start_mtime:
+            start_mtime = start_mtime.astimezone(timezone.utc)
+
         for path in self.extra_files:
             self.logger.info(f"[{self.name}] Streaming records from {path}")
             storage = Storage(path)
             info = storage.describe(path)
             mtime = info.mtime
+
+            if start_mtime is not None and mtime is not None and mtime <= start_mtime:
+                self.logger.info(
+                    "Skipping %s (mtime=%s <= bookmark=%s)",
+                    path,
+                    mtime,
+                    start_mtime,
+                )
+                continue
 
             filename = info.path
             partition_context = {SDC_FILENAME: filename}
@@ -272,15 +288,6 @@ class GribStream(Stream):
                             continue
                         if lats.size == 0:
                             continue
-
-                        for msg in grbs:
-                            try:
-                                lats, lons, vals = _extract_grid(msg)
-                            except Exception as e:
-                                self.logger.warning(f"Skipping message: {e}")
-                                continue
-                            if lats.size == 0:
-                                continue
 
                         # safe datetime extraction
                         valid_dt = getattr(msg, "validDate", None)
