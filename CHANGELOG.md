@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.2 (2025-11-30)
+
+### Bug Fixes
+
+- Review state management
+  ([`7e0dc2a`](https://github.com/celine-eu/tap-grib/commit/7e0dc2af9d0a3ef09d2e1fb4cf471ffe85249806))
+
+
 ## v1.4.1 (2025-11-29)
 
 ### Bug Fixes
