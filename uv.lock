@@ -3150,7 +3150,7 @@ requires-dist = [
     { name = "pygrib", specifier = ">=2.1.6" },
     { name = "s3fs", specifier = ">=2025.9.0" },
     { name = "s3fs", marker = "extra == 's3'", specifier = ">=2025.9,<2025.11" },
-    { name = "singer-sdk", extras = ["faker"], specifier = ">=0.48.1,<0.53.0" },
+    { name = "singer-sdk", extras = ["faker"], specifier = ">=0.48.1,<0.54.0" },
 ]
 provides-extras = ["s3"]
 
