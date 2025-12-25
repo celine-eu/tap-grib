@@ -12,6 +12,8 @@ import pygrib
 SDC_INCREMENTAL_KEY = "_sdc_last_modified"
 SDC_FILENAME = "_sdc_filename"
 
+INSTANTANEOUS_PDTS = {0, 1, 2, 3}
+
 
 def parse_bookmark(val: str | None) -> datetime | None:
     if not val:
@@ -309,11 +311,21 @@ class GribStream(Stream):
                         else:
                             valid_dt = None
 
-                        if (
-                            cutoff is not None
-                            and valid_dt is not None
-                            and valid_dt < cutoff
-                        ):
+                        drop_record = False
+                        # Attempt to filter by istantaneous values otherwise keep the record
+                        # https://codes.ecmwf.int/grib/format/grib2/ctables/4/0/
+                        if cutoff is not None:
+                            pdt = safe_get(msg, "productDefinitionTemplateNumber")
+                            is_instantaneous = (
+                                pdt in INSTANTANEOUS_PDTS if pdt else False
+                            )
+                            drop_record = (
+                                is_instantaneous
+                                and valid_dt is not None
+                                and valid_dt < cutoff
+                            )
+
+                        if drop_record:
                             # this forecast is already in the past; drop the whole message
                             continue
 
