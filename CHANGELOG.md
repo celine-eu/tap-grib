@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.4 (2025-12-25)
+
+### Bug Fixes
+
+- Improve past filter, assert if is an instantaneous value
+  ([`f4db871`](https://github.com/celine-eu/tap-grib/commit/f4db8719de4eadca17238f9328d7dd8b652ddb24))
+
+
 ## v1.4.3 (2025-11-30)
 
 ### Bug Fixes
