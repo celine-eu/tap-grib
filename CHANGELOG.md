@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.5.0 (2025-12-25)
+
+### Features
+
+- Upgrade schema to handle steps
+  ([`e802b08`](https://github.com/celine-eu/tap-grib/commit/e802b081d342a66fb7880980e823882726a2283e))
+
+
 ## v1.4.4 (2025-12-25)
 
 ### Bug Fixes
